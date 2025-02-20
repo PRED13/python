@@ -1,0 +1,16 @@
+import numpy as np 
+from python_tsp.exact import solve_tsp_dynamic_programing
+
+distancia_matriz = [(
+    [0, 13, 23, 46, 17, 14, 19],
+    [16, 0, 29, 34, 38, 40, 43],
+    [25, 34, 0, 18, 25, 27, 41],
+    [31, 30, 35, 0, 36, 37, 38], 
+    [23, 21, 23, 23, 0, 22, 27],
+    [31, 33, 34, 33, 37, 0, 39],
+    [30, 34, 37, 24, 40, 50, 0]
+)]
+
+ruta, distancia = solve_tsp_dynamic_programing(distancia_matriz)
+ruta = np.array(ruta)  # Convertimos la ruta en un array de NumPy
+print("La ruta más corta es:", ruta, "La distancia es:", distancia)
