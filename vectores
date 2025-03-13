@@ -1,0 +1,61 @@
+import heapq
+
+def get_neighbors(x, y, rows, cols):
+    # Vecinos en una cuadrícula: arriba, abajo, izquierda, derecha
+    neighbors = []
+    for dx, dy in [(-1, 0), (1, 0), (0, -1), (0, 1)]:
+        nx, ny = x + dx, y + dy
+        if 0 <= nx < rows and 0 <= ny < cols:
+            neighbors.append((nx, ny))
+    return neighbors
+
+def shortest_path_dijkstra(grid, start, end):
+    rows, cols = len(grid), len(grid[0])
+    # Crear una matriz para almacenar las distancias desde el inicio
+    distances = [[float('inf')] * cols for _ in range(rows)]
+    distances[start[0]][start[1]] = 0
+    # Usamos una cola de prioridad para explorar los caminos más cortos primero
+    priority_queue = [(0, start)]
+    
+    while priority_queue:
+        current_distance, (x, y) = heapq.heappop(priority_queue)
+        
+        if (x, y) == end:
+            return current_distance
+        
+        for nx, ny in get_neighbors(x, y, rows, cols):
+            distance = current_distance + grid[nx][ny]  # Peso de la arista
+            if distance < distances[nx][ny]:
+                distances[nx][ny] = distance
+                heapq.heappush(priority_queue, (distance, (nx, ny)))
+    
+    return float('inf')  # Si no se encuentra un camino
+
+# Solicitar las dimensiones de la cuadrícula
+rows = int(input("Ingresa el número de filas: "))
+cols = int(input("Ingresa el número de columnas: "))
+
+# Solicitar todos los valores de la cuadrícula en una sola línea
+print(f"Ingrese todos los valores de la cuadrícula en una sola línea, separados por espacios ({rows * cols} valores en total):")
+grid_values = list(map(int, input().split()))
+
+# Validar la cantidad de valores ingresados
+if len(grid_values) != rows * cols:
+    print("La cantidad de valores ingresados no coincide con las dimensiones de la cuadrícula.")
+else:
+    # Convertir los valores en una matriz (lista de listas)
+    grid = [grid_values[i * cols:(i + 1) * cols] for i in range(rows)]
+
+    # Solicitar punto de inicio y fin
+    start_x, start_y = map(int, input("Ingresa las coordenadas de inicio (x y): ").split())
+    end_x, end_y = map(int, input("Ingresa las coordenadas de fin (x y): ").split())
+
+    # Encontrar la distancia mínima
+    start = (start_x, start_y)
+    end = (end_x, end_y)
+    distance = shortest_path_dijkstra(grid, start, end)
+
+    if distance == float('inf'):
+        print("No se encontró un camino hasta el destino.")
+    else:
+        print(f"La distancia mínima desde {start} hasta {end} es: {distance}")
