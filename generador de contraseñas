@@ -1,0 +1,28 @@
+import random
+import string
+
+def generar_contraseña(longitud=12, usar_mayusculas=True, usar_numeros=True, usar_simbolos=True):
+    caracteres = string.ascii_lowercase  # Letras minúsculas
+    
+    if usar_mayusculas:
+        caracteres += string.ascii_uppercase  # Letras mayúsculas
+    if usar_numeros:
+        caracteres += string.digits  # Números (0-9)
+    if usar_simbolos:
+        caracteres += string.punctuation  # Símbolos (!@#$%^&*...)
+    
+    if not caracteres:
+        return "Error: Debes habilitar al menos un tipo de carácter."
+    
+    contraseña = ''.join(random.choice(caracteres) for _ in range(longitud))
+    return contraseña
+
+if __name__ == "__main__":
+    print("🔒 Generador de Contraseñas Seguras 🔒")
+    longitud = int(input("Longitud de la contraseña (ej. 12): ") or 12)
+    mayusculas = input("¿Incluir mayúsculas? (s/n): ").lower() == 's'
+    numeros = input("¿Incluir números? (s/n): ").lower() == 's'
+    simbolos = input("¿Incluir símbolos? (s/n): ").lower() == 's'
+    
+    contraseña_generada = generar_contraseña(longitud, mayusculas, numeros, simbolos)
+    print("\n✅ Tu contraseña segura es:", contraseña_generada)
