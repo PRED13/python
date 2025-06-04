@@ -1,6 +1,8 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
+
+
 # Parámetros del movimiento parabólico
 v0 = 10  # Velocidad inicial (m/s)
 theta = 45  # Ángulo de lanzamiento (grados)
