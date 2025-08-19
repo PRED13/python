@@ -15,7 +15,7 @@ def get_connection():
     except Exception as e:
         print("Error al conectar:", e)
         return None
-
+    
 def execute_query(query, params=()):
     conn = get_connection()
     if conn:

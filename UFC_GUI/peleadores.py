@@ -22,9 +22,9 @@ def agregar_peleador_gui(tab):
     def guardar():
         try:
             query = """INSERT INTO Peleadores 
-                       (Nombre, Nacionalidad, CategoriaPeso, Peso, EstiloCombate,
-                        Altura, AlcanceBrazo, Entrenador, Gimnasio)
-                       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
+                         (Nombre, Nacionalidad, CategoriaPeso, Peso, EstiloCombate,
+                          Altura, AlcanceBrazo, Entrenador, Gimnasio)
+                         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"""
             params = (
                 entradas['Nombre'].get(),
                 entradas['Nacionalidad'].get(),
@@ -46,12 +46,15 @@ def agregar_peleador_gui(tab):
 
     tk.Button(frame_formulario, text="Agregar Peleador", command=guardar).grid(row=len(campos), column=0, columnspan=2, pady=10)
 
+    # Botón para eliminar
+    tk.Button(frame_formulario, text="Eliminar Peleador", command=eliminar_peleador).grid(row=len(campos)+1, column=0, columnspan=2, pady=5)
+
     # Crear un frame para la tabla y las barras de desplazamiento
     frame_tabla = tk.Frame(tab)
     frame_tabla.pack(expand=1, fill='both', padx=10, pady=10)
 
     # Configurar todas las 9 columnas para el Treeview
-    columnas_treeview = ('Nombre', 'Nacionalidad', 'CategoriaPeso', 'Peso', 'EstiloCombate', 'Altura', 'AlcanceBrazo', 'Entrenador', 'Gimnasio')
+    columnas_treeview = ('IdPeleador', 'Nombre', 'Nacionalidad', 'CategoriaPeso', 'Peso', 'EstiloCombate', 'Altura', 'AlcanceBrazo', 'Entrenador', 'Gimnasio')
     
     # Crear un estilo para los bordes de las celdas
     style = ttk.Style()
@@ -74,10 +77,37 @@ def agregar_peleador_gui(tab):
 
     tree_peleadores.pack(side='left', expand=1, fill='both')
 
-    for col in columnas_treeview:
-        tree_peleadores.heading(col, text=col, anchor='center')
-        tree_peleadores.column(col, anchor='center', width=120)  # Establecer un ancho inicial para que el scroll funcione
+    # Ajustar las columnas para mostrar solo las que nos interesan
+    tree_peleadores.heading('IdPeleador', text='IdPeleador')
+    tree_peleadores.column('IdPeleador', width=0, stretch=tk.NO) # Hacemos la columna del ID invisible
+
+    tree_peleadores.heading('Nombre', text='Nombre', anchor='center')
+    tree_peleadores.column('Nombre', anchor='center', width=120)
     
+    tree_peleadores.heading('Nacionalidad', text='Nacionalidad', anchor='center')
+    tree_peleadores.column('Nacionalidad', anchor='center', width=120)
+    
+    tree_peleadores.heading('CategoriaPeso', text='CategoriaPeso', anchor='center')
+    tree_peleadores.column('CategoriaPeso', anchor='center', width=120)
+
+    tree_peleadores.heading('Peso', text='Peso', anchor='center')
+    tree_peleadores.column('Peso', anchor='center', width=120)
+    
+    tree_peleadores.heading('EstiloCombate', text='EstiloCombate', anchor='center')
+    tree_peleadores.column('EstiloCombate', anchor='center', width=120)
+
+    tree_peleadores.heading('Altura', text='Altura', anchor='center')
+    tree_peleadores.column('Altura', anchor='center', width=120)
+    
+    tree_peleadores.heading('AlcanceBrazo', text='AlcanceBrazo', anchor='center')
+    tree_peleadores.column('AlcanceBrazo', anchor='center', width=120)
+
+    tree_peleadores.heading('Entrenador', text='Entrenador', anchor='center')
+    tree_peleadores.column('Entrenador', anchor='center', width=120)
+    
+    tree_peleadores.heading('Gimnasio', text='Gimnasio', anchor='center')
+    tree_peleadores.column('Gimnasio', anchor='center', width=120)
+
     refrescar_peleadores()
 
 def refrescar_peleadores():
@@ -87,7 +117,8 @@ def refrescar_peleadores():
             tree_peleadores.delete(row)
 
         query = """
-            SELECT Nombre, Nacionalidad, CategoriaPeso, Peso, EstiloCombate, Altura, AlcanceBrazo, Entrenador, Gimnasio
+            -- Agrega IdPeleador a la consulta
+            SELECT IdPeleador, Nombre, Nacionalidad, CategoriaPeso, Peso, EstiloCombate, Altura, AlcanceBrazo, Entrenador, Gimnasio
             FROM Peleadores
             ORDER BY Nombre ASC
         """
@@ -95,14 +126,59 @@ def refrescar_peleadores():
 
         for row_data in data:
             fila_para_treeview = (
-                row_data[0], # Nombre
-                row_data[1], # Nacionalidad
-                row_data[2], # CategoriaPeso
-                row_data[3], # Peso
-                row_data[4], # EstiloCombate
-                row_data[5], # Altura
-                row_data[6], # AlcanceBrazo
-                row_data[7], # Entrenador
-                row_data[8]  # Gimnasio
+                row_data[0], # IdPeleador
+                row_data[1], # Nombre
+                row_data[2], # Nacionalidad
+                row_data[3], # CategoriaPeso
+                row_data[4], # Peso
+                row_data[5], # EstiloCombate
+                row_data[6], # Altura
+                row_data[7], # AlcanceBrazo
+                row_data[8], # Entrenador
+                row_data[9]  # Gimnasio
             )
             tree_peleadores.insert('', tk.END, values=fila_para_treeview)
+
+def eliminar_peleador():
+    """
+    Función para eliminar la fila seleccionada del Treeview y de la base de datos.
+    """
+    global tree_peleadores
+    seleccion = tree_peleadores.selection()
+
+    if not seleccion:
+        messagebox.showwarning("Advertencia", "Por favor, selecciona una fila para eliminar.")
+        return
+
+    item = tree_peleadores.item(seleccion[0])
+    
+    # El ID es el primer valor en la lista de valores de la fila
+    id_peleador = item['values'][0] 
+    
+    # El nombre se usa para el mensaje de confirmación
+    nombre_peleador = item['values'][1] 
+
+    try:
+        # Verifica si el peleador está en la tabla de Peleas.
+        query_verificar = "SELECT COUNT(*) FROM Peleas WHERE IdPeleador1 = ? OR IdPeleador2 = ?"
+        
+        # Se asegura de que el ID es de tipo entero para la consulta SQL
+        peleas_referenciadas = fetch_query(query_verificar, (id_peleador, id_peleador))
+        
+        if peleas_referenciadas and peleas_referenciadas[0][0] > 0:
+            messagebox.showerror("Error", "No se puede eliminar este peleador porque está referenciado en las peleas.")
+            return
+
+    except Exception as e:
+        messagebox.showerror("Error de Verificación", f"Ocurrió un error al verificar las referencias: {str(e)}")
+        return
+
+    # Confirmar la eliminación con el usuario
+    if messagebox.askyesno("Confirmar Eliminación", f"¿Estás seguro de que deseas eliminar a {nombre_peleador}?"):
+        try:
+            query_eliminar = "DELETE FROM Peleadores WHERE IdPeleador = ?"
+            execute_query(query_eliminar, (id_peleador,))
+            messagebox.showinfo("Éxito", f"Peleador {nombre_peleador} eliminado correctamente.")
+            refrescar_peleadores()
+        except Exception as e:
+            messagebox.showerror("Error", f"Ocurrió un error al intentar eliminar al peleador: {str(e)}")

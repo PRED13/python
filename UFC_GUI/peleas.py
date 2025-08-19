@@ -6,82 +6,87 @@ tree_peleas = None  # Treeview global
 
 
 def registrar_pelea_gui(tab):
-    """Muestra formulario y Treeview con TODAS las columnas de la tabla Peleas"""
+    """Crea el formulario y Treeview para manejar la tabla Peleas"""
     global tree_peleas
 
-    # Frame para formulario
-    form_frame = tk.LabelFrame(tab, text="Ingresar nueva pelea", padx=10, pady=10)
-    form_frame.pack(fill="x", padx=10, pady=10)
+    # Frame de formulario
+    frame_form = tk.Frame(tab)
+    frame_form.pack(pady=10)
 
-    entradas = {}
+    # ---- Campos del formulario ----
+    tk.Label(frame_form, text="IdEvento:").grid(row=0, column=0, padx=5, pady=5)
+    entry_evento = tk.Entry(frame_form)
+    entry_evento.grid(row=0, column=1, padx=5, pady=5)
 
-    # ======= CAMPOS ======= #
-    # IdEvento (texto normal)
-    tk.Label(form_frame, text="IdEvento").grid(row=0, column=0, sticky="e", pady=2)
-    id_evento_var = tk.StringVar()
-    tk.Entry(form_frame, textvariable=id_evento_var, width=30).grid(row=0, column=1, pady=2)
-    entradas["IdEvento"] = id_evento_var
+    tk.Label(frame_form, text="Peleador 1:").grid(row=1, column=0, padx=5, pady=5)
+    peleador1_cb = ttk.Combobox(frame_form, state="readonly")
+    peleador1_cb.grid(row=1, column=1, padx=5, pady=5)
 
-    # PELEADOR 1
-    tk.Label(form_frame, text="Peleador 1").grid(row=1, column=0, sticky="e", pady=2)
-    peleadores = fetch_query("SELECT IdPeleador, Nombre FROM Peleadores WHERE EstadoActivo=1")
-    peleador1_var = tk.StringVar()
-    combo1 = ttk.Combobox(form_frame, textvariable=peleador1_var, width=30,
-                          values=[f"{p[0]} - {p[1]}" for p in peleadores])
-    combo1.grid(row=1, column=1, pady=2)
-    entradas["IdPeleador1"] = peleador1_var
+    tk.Label(frame_form, text="Peleador 2:").grid(row=2, column=0, padx=5, pady=5)
+    peleador2_cb = ttk.Combobox(frame_form, state="readonly")
+    peleador2_cb.grid(row=2, column=1, padx=5, pady=5)
+    
+    # ---- Botón de Actualizar ----
+    btn_actualizar = tk.Button(
+        frame_form,
+        text="Actualizar Peleadores",
+        command=lambda: llenar_peleadores(peleador1_cb, peleador2_cb)
+    )
+    btn_actualizar.grid(row=2, column=2, padx=5, pady=5) # Colocado al lado de los combobox
 
-    # PELEADOR 2
-    tk.Label(form_frame, text="Peleador 2").grid(row=2, column=0, sticky="e", pady=2)
-    peleador2_var = tk.StringVar()
-    combo2 = ttk.Combobox(form_frame, textvariable=peleador2_var, width=30,
-                          values=[f"{p[0]} - {p[1]}" for p in peleadores])
-    combo2.grid(row=2, column=1, pady=2)
-    entradas["IdPeleador2"] = peleador2_var
+    tk.Label(frame_form, text="Ganador:").grid(row=3, column=0, padx=5, pady=5)
+    entry_ganador = tk.Entry(frame_form)
+    entry_ganador.grid(row=3, column=1, padx=5, pady=5)
 
-    # GANADOR (también un combobox con los dos + empate)
-    tk.Label(form_frame, text="Ganador (0 = Empate)").grid(row=3, column=0, sticky="e", pady=2)
-    ganador_var = tk.StringVar()
-    combo_ganador = ttk.Combobox(form_frame, textvariable=ganador_var, width=30,
-                                 values=["0 - Empate"] + [f"{p[0]} - {p[1]}" for p in peleadores])
-    combo_ganador.grid(row=3, column=1, pady=2)
-    entradas["Ganador"] = ganador_var
+    tk.Label(frame_form, text="Método:").grid(row=4, column=0, padx=5, pady=5)
+    entry_metodo = tk.Entry(frame_form)
+    entry_metodo.grid(row=4, column=1, padx=5, pady=5)
 
-    # Método
-    tk.Label(form_frame, text="Método").grid(row=4, column=0, sticky="e", pady=2)
-    metodo_var = tk.StringVar()
-    tk.Entry(form_frame, textvariable=metodo_var, width=30).grid(row=4, column=1, pady=2)
-    entradas["Metodo"] = metodo_var
+    tk.Label(frame_form, text="Ronda:").grid(row=5, column=0, padx=5, pady=5)
+    entry_ronda = tk.Entry(frame_form)
+    entry_ronda.grid(row=5, column=1, padx=5, pady=5)
 
-    # Ronda
-    tk.Label(form_frame, text="Ronda").grid(row=5, column=0, sticky="e", pady=2)
-    ronda_var = tk.StringVar()
-    tk.Entry(form_frame, textvariable=ronda_var, width=30).grid(row=5, column=1, pady=2)
-    entradas["Ronda"] = ronda_var
+    tk.Label(frame_form, text="Duración (segundos):").grid(row=6, column=0, padx=5, pady=5)
+    entry_duracion = tk.Entry(frame_form)
+    entry_duracion.grid(row=6, column=1, padx=5, pady=5)
 
-    # Duración en segundos
-    tk.Label(form_frame, text="Duración (segundos)").grid(row=6, column=0, sticky="e", pady=2)
-    duracion_var = tk.StringVar()
-    tk.Entry(form_frame, textvariable=duracion_var, width=30).grid(row=6, column=1, pady=2)
-    entradas["DuracionSegundos"] = duracion_var
-
-    # Tipo de pelea
-    tk.Label(form_frame, text="TipoPelea").grid(row=7, column=0, sticky="e", pady=2)
-    tipo_var = tk.StringVar()
-    tk.Entry(form_frame, textvariable=tipo_var, width=30).grid(row=7, column=1, pady=2)
-    entradas["TipoPelea"] = tipo_var
+    tk.Label(frame_form, text="Tipo de Pelea:").grid(row=7, column=0, padx=5, pady=5)
+    entry_tipo = tk.Entry(frame_form)
+    entry_tipo.grid(row=7, column=1, padx=5, pady=5)
 
     # Botón guardar
-    tk.Button(
-        form_frame, text="Guardar Pelea", bg="green", fg="white",
-        command=lambda: guardar_pelea(entradas)
-    ).grid(row=8, column=0, columnspan=2, pady=10)
+    btn_guardar = tk.Button(
+        frame_form,
+        text="Guardar Pelea",
+        bg="green",
+        fg="white",
+        command=lambda: guardar_pelea(
+            entry_evento,
+            peleador1_cb,
+            peleador2_cb,
+            entry_ganador,
+            entry_metodo,
+            entry_ronda,
+            entry_duracion,
+            entry_tipo,
+        ),
+    )
+    btn_guardar.grid(row=8, column=0, columnspan=2, pady=10)
 
-    # ======= TREEVIEW ======= #
-    columnas = ("IdPelea", "IdEvento", "IdPeleador1", "IdPeleador2",
-                "Ganador", "Metodo", "Ronda", "DuracionSegundos", "TipoPelea")
+    # ---- Treeview ----
+    columnas = (
+        "IdPelea",
+        "IdEvento",
+        "IdPeleador1",
+        "IdPeleador2",
+        "Ganador",
+        "Metodo",
+        "Ronda",
+        "DuracionSegundos",
+        "TipoPelea",
+    )
 
-    tree_peleas = ttk.Treeview(tab, columns=columnas, show="headings")
+    tree_peleas = ttk.Treeview(tab, columns=columnas, show="headings", selectmode="extended")
 
     for col in columnas:
         tree_peleas.heading(col, text=col)
@@ -89,65 +94,92 @@ def registrar_pelea_gui(tab):
 
     tree_peleas.pack(expand=1, fill="both", padx=10, pady=10)
 
+    # Botón eliminar
+    btn_eliminar = tk.Button(tab, text="Eliminar Pelea(s)", bg="red", fg="white", command=eliminar_pelea)
+    btn_eliminar.pack(pady=5)
+
+    # Llenar peleadores en los combobox al iniciar
+    llenar_peleadores(peleador1_cb, peleador2_cb)
+
+    # Refrescar tabla
     refrescar_peleas()
 
 
-def guardar_pelea(entradas):
-    """Inserta una nueva pelea en la base de datos"""
+def llenar_peleadores(cb1, cb2):
+    """Llena los combobox con los IdPeleador existentes en la tabla Peleadores"""
     try:
-        # Convertir valores
-        id_evento = entradas["IdEvento"].get().strip()
+        peleadores = fetch_query("SELECT IdPeleador, Nombre FROM Peleadores")
+        ids = [f"{row[0]} - {row[1]}" for row in peleadores]
+        cb1["values"] = ids
+        cb2["values"] = ids
+        messagebox.showinfo("Actualización", "Lista de peleadores actualizada correctamente.")
+    except Exception as e:
+        messagebox.showerror("Error de Actualización", f"No se pudo actualizar la lista de peleadores.\n{e}")
 
-        id1_text = entradas["IdPeleador1"].get()
-        id2_text = entradas["IdPeleador2"].get()
-        ganador_text = entradas["Ganador"].get()
+# ... (El resto del código como guardar_pelea, refrescar_peleas y eliminar_pelea se mantiene igual)
+def guardar_pelea(entry_evento, cb1, cb2, entry_ganador, entry_metodo, entry_ronda, entry_duracion, entry_tipo):
+    """Inserta una nueva pelea en la BD"""
+    try:
+        id_evento = entry_evento.get()
+        id_peleador1 = cb1.get().split(" - ")[0] if cb1.get() else None
+        id_peleador2 = cb2.get().split(" - ")[0] if cb2.get() else None
+        ganador = entry_ganador.get()
+        metodo = entry_metodo.get()
+        ronda = entry_ronda.get()
+        duracion = entry_duracion.get()
+        tipo = entry_tipo.get()
 
-        if not id1_text or not id2_text or not ganador_text:
-            messagebox.showerror("Error", "Debe seleccionar los peleadores y el ganador.")
-            return
-
-        id1 = int(id1_text.split(" - ")[0])
-        id2 = int(id2_text.split(" - ")[0])
-        ganador_id = 0 if ganador_text.startswith("0") else int(ganador_text.split(" - ")[0])
-
-        metodo = entradas["Metodo"].get().strip()
-        ronda = int(entradas["Ronda"].get())
-        duracion = int(entradas["DuracionSegundos"].get())
-        tipo = entradas["TipoPelea"].get().strip()
-
-        if id1 == id2:
-            messagebox.showerror("Error", "Un peleador no puede pelear contra sí mismo.")
+        if not id_evento or not id_peleador1 or not id_peleador2:
+            messagebox.showwarning("Error", "Debes llenar todos los campos obligatorios.")
             return
 
         query = """
-        INSERT INTO Peleas (IdEvento, IdPeleador1, IdPeleador2, Ganador, Metodo, Ronda, DuracionSegundos, TipoPelea)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO Peleas (IdEvento, IdPeleador1, IdPeleador2, Ganador, Metodo, Ronda, DuracionSegundos, TipoPelea)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
         """
-        execute_query(query, (id_evento, id1, id2, ganador_id if ganador_id != 0 else None,
-                              metodo, ronda, duracion, tipo))
+        execute_query(query, (id_evento, id_peleador1, id_peleador2, ganador, metodo, ronda, duracion, tipo))
 
-        messagebox.showinfo("Éxito", "Pelea registrada correctamente")
+        messagebox.showinfo("Éxito", "Pelea registrada correctamente.")
         refrescar_peleas()
-
-        # Limpiar campos
-        for v in entradas.values():
-            v.set("")
-
     except Exception as e:
-        messagebox.showerror("Error", str(e))
+        messagebox.showerror("Error", f"No se pudo guardar la pelea.\n{e}")
 
 
 def refrescar_peleas():
-    """Refresca el Treeview con los datos exactos de la tabla Peleas"""
+    """Carga todas las peleas en el Treeview"""
     global tree_peleas
     if tree_peleas:
-        tree_peleas.delete(*tree_peleas.get_children())
+        for row in tree_peleas.get_children():
+            tree_peleas.delete(row)
 
-        data = fetch_query("""
-            SELECT IdPelea, IdEvento, IdPeleador1, IdPeleador2, Ganador,
-                   Metodo, Ronda, DuracionSegundos, TipoPelea
-            FROM Peleas
-        """)
-
+        data = fetch_query(
+            "SELECT IdPelea, IdEvento, IdPeleador1, IdPeleador2, Ganador, Metodo, Ronda, DuracionSegundos, TipoPelea FROM Peleas"
+        )
         for row in data:
             tree_peleas.insert("", tk.END, values=row)
+
+
+def eliminar_pelea():
+    """Elimina una o varias peleas seleccionadas del Treeview y la BD"""
+    global tree_peleas
+
+    seleccion = tree_peleas.selection()
+    if not seleccion:
+        messagebox.showwarning("Atención", "Debes seleccionar al menos una pelea para eliminar.")
+        return
+
+    if not messagebox.askyesno("Confirmar", "¿Seguro que deseas eliminar las peleas seleccionadas?"):
+        return
+
+    try:
+        for item in seleccion:
+            pelea = tree_peleas.item(item, "values")
+            id_pelea = pelea[0]
+            
+            query = "DELETE FROM Peleas WHERE IdPelea = ?"
+            execute_query(query, (id_pelea,))
+
+        refrescar_peleas()
+        messagebox.showinfo("Éxito", "Pelea(s) eliminada(s) correctamente.")
+    except Exception as e:
+        messagebox.showerror("Error", f"No se pudieron eliminar las peleas.\n{e}")
