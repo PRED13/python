@@ -14,7 +14,6 @@ def resolver_simplex():
             [1, 1, 1]
         ]
         b = [600, 500, 300]
-
         res = linprog(c, A_ub=A, b_ub=b, method='simplex')
 
         if res.success:
